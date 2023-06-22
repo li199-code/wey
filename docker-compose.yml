@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  nginx:
+    build: ./wey-frontend/
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - web_static:/var/www/mysite/assets/static
+      - web_media:/var/www/mysite/assets/media
+    depends_on: 
+      - django
+    
+
+  django:
+    build: ./wey_backend/
+    restart: always
+    expose:
+      - 8000
+    command: >
+      sh -c "python manage.py collectstatic --noinput 
+      && uwsgi --ini uwsgi.ini"
+    volumes:
+      - web_static:/var/www/mysite/assets/static
+      - web_media:/var/www/mysite/assets/media
+
+volumes:
+  web_static:
+  web_media:
