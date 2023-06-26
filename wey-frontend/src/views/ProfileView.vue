@@ -46,6 +46,9 @@
             <div class="p-4 bg-white border border-gray-200 rounded-lg" v-for="post in posts" v-bind:key="post.id">
                 <PostItem v-bind:post="post" />
             </div>
+
+            <Paginator :has_previous="has_previous" :has_next="has_next" :total_pages="total_pages"
+                :current_page="current_page" @getFeed="getFeed" />
         </div>
         <div class="main-right space-y-4">
             <PeopleYouMayKnowVue />
@@ -54,18 +57,13 @@
     </div>
 </template>
 
-<style>
-input[type="file"] {
-    display: none;
-}
-</style>
-
 
 <script>
 import PeopleYouMayKnowVue from '../components/PeopleYouMayKnow.vue';
 import TrendsVue from '../components/Trends.vue'
 import PostItem from '../components/PostItem.vue'
 import PostForm from '../components/PostForm.vue';
+import Paginator from '../components/Paginator.vue';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user';
 import { useToastStore } from '@/stores/toast';
@@ -77,6 +75,7 @@ export default {
         TrendsVue,
         PostItem,
         PostForm,
+        Paginator,
     },
 
     setup() {
@@ -98,18 +97,22 @@ export default {
             isfriend: false,
             buttontext: 'Send Friendship Request',
             url: null,
+            has_previous: false,
+            has_next: false,
+            total_pages: 0,
+            current_page: 0,
         }
     },
 
     mounted() {
-        this.getFeed();
+        this.getFeed(1);
 
     },
 
     watch: {
         '$route.params.id': {
             handler: function () {
-                this.getFeed()
+                this.getFeed(1)
             },
             deep: true,
             immediate: true
@@ -122,12 +125,14 @@ export default {
             this.url = URL.createObjectURL(file);
         },
 
-        getFeed() {
+        getFeed(page) {
             axios
-                .get(`/api/post/profile/${this.$route.params.id}/`)
+                .get(`/api/post/profile/${this.$route.params.id}/?page=${page}`)
                 .then(response => {
-                    console.log('posts', response.data.posts);
-                    console.log('user', response.data.user);
+                    this.has_previous = response.data.has_previous;
+                    this.has_next = response.data.has_next;
+                    this.total_pages = response.data.total_pages;
+                    this.current_page = response.data.current_page;
 
                     this.posts = response.data.posts;
                     this.user = response.data.user;

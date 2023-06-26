@@ -1,8 +1,19 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import router from '../router'
+import { useToastStore } from '@/stores/toast'
 
 export const useUserStore = defineStore({
+
     id: 'user',
+
+    setup() {
+        const toastStore = useToastStore()
+
+        return {
+            toastStore
+        }
+    },
 
     state: () => ({
         user: {
@@ -11,7 +22,6 @@ export const useUserStore = defineStore({
             name: null,
             email: null,
             access: null,
-            refresh: null,
             avatar: null
         }
     }),
@@ -20,18 +30,27 @@ export const useUserStore = defineStore({
         initStore() {
             console.log('initStore', localStorage.getItem('user.access'))
 
+            axios.interceptors.response.use(response => response, error => {
+                const originalRequest = error.config;
+
+                if (error.response.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+                    // this.toastStore.showToast(5000, 'Credential Expired, log in again!', 'bg-emerald-500')
+                    router.push('/login');
+                }
+
+                return Promise.reject(error);
+            });
+
             if (localStorage.getItem('user.access')) {
                 console.log('User has access!')
 
                 this.user.access = localStorage.getItem('user.access')
-                this.user.refresh = localStorage.getItem('user.refresh')
                 this.user.id = localStorage.getItem('user.id')
                 this.user.name = localStorage.getItem('user.name')
                 this.user.email = localStorage.getItem('user.email')
                 this.user.avatar = localStorage.getItem('user.avatar')
                 this.user.isAuthenticated = true
-
-                this.refreshToken()
 
                 console.log('Initialized user:', this.user)
             }
@@ -41,11 +60,9 @@ export const useUserStore = defineStore({
             console.log('setToken', data)
 
             this.user.access = data.access
-            this.user.refresh = data.refresh
             this.user.isAuthenticated = true
 
             localStorage.setItem('user.access', data.access)
-            localStorage.setItem('user.refresh', data.refresh)
 
             console.log('user.access: ', localStorage.getItem('user.access'))
         },
@@ -53,7 +70,6 @@ export const useUserStore = defineStore({
         removeToken() {
             console.log('removeToken')
 
-            this.user.refresh = null
             this.user.access = null
             this.user.isAuthenticated = false
             this.user.id = false
@@ -62,7 +78,6 @@ export const useUserStore = defineStore({
             this.user.avatar = null
 
             localStorage.setItem('user.access', '')
-            localStorage.setItem('user.refresh', '')
             localStorage.setItem('user.id', '')
             localStorage.setItem('user.name', '')
             localStorage.setItem('user.email', '')
@@ -83,24 +98,6 @@ export const useUserStore = defineStore({
             localStorage.setItem('user.avatar', this.user.avatar)
 
             console.log('User', this.user)
-        },
-
-        refreshToken() {
-            axios.post('/api/refresh/', {
-                refresh: this.user.refresh
-            })
-                .then((response) => {
-                    this.user.access = response.data.access
-
-                    localStorage.setItem('user.access', response.data.access)
-
-                    axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access
-                })
-                .catch((error) => {
-                    console.log(error)
-
-                    this.removeToken()
-                })
         },
     }
 })

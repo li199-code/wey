@@ -3,10 +3,13 @@
 import os
 import sys
 
-
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings')
+    # os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings')
+    if os.environ.get('DJANGO_ENV') == 'production':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_prod')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_dev')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

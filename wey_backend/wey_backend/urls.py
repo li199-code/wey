@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/post/', include('post.urls')),
     path('api/search/', include('search.urls')),
     path('api/chat/', include('chat.urls')),
+    path('grappelli/', include('grappelli.urls')), # grappelli URLS
     path('admin/', admin.site.urls),
     path('activateemail/', activateemail, name='activateemail'),
     path('api/notification/', include('notification.urls'), name='notification'),

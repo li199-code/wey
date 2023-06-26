@@ -24,6 +24,12 @@
     </form>
 </template>
 
+<style scoped>
+input[type="file"] {
+    display: none;
+}
+</style>
+
 <script>
 import axios from 'axios'
 

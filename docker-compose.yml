@@ -8,9 +8,8 @@ services:
     volumes:
       - web_static:/var/www/mysite/assets/static
       - web_media:/var/www/mysite/assets/media
-    depends_on: 
+    depends_on:
       - django
-    
 
   django:
     build: ./wey_backend/
@@ -18,11 +17,24 @@ services:
     expose:
       - 8000
     command: >
-      sh -c "python manage.py collectstatic --noinput 
-      && uwsgi --ini uwsgi.ini"
+      sh -c "python manage.py collectstatic --noinput  && python manage.py migrate && uwsgi --ini uwsgi.ini"
     volumes:
       - web_static:/var/www/mysite/assets/static
       - web_media:/var/www/mysite/assets/media
+    depends_on:
+      - database
+
+  database:
+    build: ./MySQL/
+    ports:
+      - '3306:3306' # development '3307:3306' production: '3306:3306'
+    # environment:
+    #   MYSQL_DATABASE: 'appdb'
+    #   MYSQL_PASSWORD: 'root'
+    #   MYSQL_ROOT_PASSWORD: 'root'
+    # volumes:
+    #   - 'db:/var/lib/mysql'
+    #   # command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
 
 volumes:
   web_static:

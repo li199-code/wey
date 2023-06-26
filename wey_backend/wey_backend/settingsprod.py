@@ -40,6 +40,7 @@ REST_FRAMEWORK = {
     )
 }
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://1.116.161.57:8000",   
 ]
@@ -100,8 +101,13 @@ WSGI_APPLICATION = 'wey_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'appdb',
+        'HOST': 'db',
+        'PORT': 3306,
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'OPTIONS': {'sql_mode': 'STRICT_ALL_TABLES', 'charset': 'utf8mb4',},
     }
 }
 

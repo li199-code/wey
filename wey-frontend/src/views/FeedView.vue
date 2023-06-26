@@ -9,6 +9,12 @@
             <div class="p-4 bg-white border border-gray-200 rounded-lg" v-for="post in posts" v-bind:key="post.id">
                 <PostItem v-bind:post="post" v-on:handleDelete="handleDelete" />
             </div>
+
+            <Paginator :has_previous="has_previous" :has_next="has_next" :total_pages="total_pages" 
+                :current_page="current_page"  @getFeed="getFeed" />
+
+
+
         </div>
         <div class="main-right space-y-4">
             <PeopleYouMayKnowVue />
@@ -22,6 +28,7 @@ import PeopleYouMayKnowVue from '../components/PeopleYouMayKnow.vue';
 import TrendsVue from '../components/Trends.vue'
 import PostItem from '../components/PostItem.vue'
 import PostForm from '../components/PostForm.vue'
+import Paginator from '../components/Paginator.vue';
 import axios from 'axios';
 
 export default {
@@ -31,11 +38,16 @@ export default {
         TrendsVue,
         PostItem,
         PostForm,
+        Paginator,
     },
 
     data() {
         return {
             posts: [],
+            has_previous: false,
+            has_next: false,
+            total_pages: 0,
+            current_page: 0,
             body: '',
             url: null,
             is_private: false,
@@ -43,16 +55,21 @@ export default {
     },
 
     mounted() {
-        this.getFeed()
+        this.getFeed(1)
     },
 
     methods: {
-        getFeed() {
+        getFeed(page) {
             axios
-                .get('api/post')
+                .get(`api/post/?page=${page}`)
                 .then(response => {
-                    console.log('data', response.data);
-                    this.posts = response.data
+                    console.log('data', response);
+                    this.posts = response.data.posts;
+                    this.has_previous = response.data.has_previous;
+                    this.has_next = response.data.has_next;
+                    this.total_pages = response.data.total_pages;
+                    this.current_page = response.data.current_page;                   
+                    
                 })
                 .catch(error => {
                     console.log('error', error);

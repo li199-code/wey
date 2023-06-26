@@ -6,12 +6,15 @@
                 <PostItem v-bind:post="post" />
             </div>
 
-            <div class="p-4 ml-6 bg-white border border-gray-200 rounded-lg" v-for="comment in post.comments"
+            <div class="p-4 ml-6 bg-white border border-gray-200 rounded-lg" v-for="comment in comments_paginator.comments"
                 v-bind:key="comment.id">
                 <CommentItem v-bind:comment="comment" />
             </div>
 
-            <div class="bg-white rounded-lg">
+            <Paginator :has_previous="comments_paginator.has_previous" :has_next="comments_paginator.has_next" :total_pages="comments_paginator.total_pages" 
+                :current_page="comments_paginator.current_page"  @getFeed="getPost" />           
+
+            <div class="bg-white rounded-lg mt-4">
                 <form v-on:submit.prevent="submitForm" method="post">
                     <div class="p-4">
                         <textarea v-model="body" class="p-4 w-full bg-gray-100 rounded-lg"
@@ -37,6 +40,7 @@
 import PeopleYouMayKnowVue from '../components/PeopleYouMayKnow.vue';
 import TrendsVue from '../components/Trends.vue'
 import PostItem from '../components/PostItem.vue'
+import Paginator from '../components/Paginator.vue';
 import CommentItem from '../components/CommentItem.vue'
 import axios from 'axios';
 
@@ -47,29 +51,38 @@ export default {
         TrendsVue,
         PostItem,
         CommentItem,
+        Paginator,
     },
 
     data() {
         return {
             post: {
                 id: null,
-                comments: []
             },
+            comments_paginator: {
+                comments: [],
+                has_previous: false,
+                has_next: false,
+                total_pages: 0,
+                current_page: 0,
+            },
+
             body: ''
         }
     },
 
     mounted() {
-        this.getPost()
+        this.getPost(1)
     },
 
     methods: {
-        getPost() {
+        getPost(comment_page) {
             axios
-                .get(`api/post/${this.$route.params.id}/`)
+                .get(`api/post/${this.$route.params.id}/?comment_page=${comment_page}`)
                 .then(response => {
                     console.log('post', response.data);
-                    this.post = response.data;
+                    this.post = response.data.post;
+                    this.comments_paginator = response.data.comments_paginator;
                 })
                 .catch(error => {
                     console.log('error', error);

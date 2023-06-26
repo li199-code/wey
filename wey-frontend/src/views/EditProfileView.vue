@@ -26,7 +26,9 @@
 
                 <div>
                     <label>Avatar</label><br>
-                    <input type="file" ref="file">
+                    <input type="file" ref="file" accept="image/*" v-on:change="previewImage">
+                    <br>
+                    <img v-if="previewUrl" :src="previewUrl" alt="Preview" style="max-width: 200px; max-height: 200px;">
                 </div>
 
                 <template v-if="errors.length > 0">
@@ -69,10 +71,21 @@ export default {
                 name: this.userStore.user.name
             },
             errors: [],
+            previewUrl: '',
         }
     },
 
     methods: {
+        previewImage(event) {
+            const file = this.$refs.file.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                this.previewUrl = event.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        },
         submitForm() {
             this.errors = []
 

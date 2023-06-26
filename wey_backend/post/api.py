@@ -11,6 +11,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from notification.utils import create_notification
 
 from django.http import JsonResponse
+from rest_framework.pagination import PageNumberPagination
+from django.core.paginator import Paginator
+from django.core import serializers
 
 
 class PostList(generics.ListCreateAPIView):
@@ -23,6 +26,7 @@ class PostList(generics.ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+        page_number = request.GET.get('page')
 
         user_ids = [user.id for user in request.user.friends.all()]
         user_ids.append(request.user.id)
@@ -33,8 +37,21 @@ class PostList(generics.ListCreateAPIView):
             Q(is_private=True) & ~Q(created_by=request.user)
         )
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        paginator = Paginator(queryset, 10)
+        page_obj = paginator.get_page(page_number)
+
+        serializer = PostSerializer(page_obj, many=True)
+
+        response_data = {
+            'posts': serializer.data,
+            'has_previous': page_obj.has_previous(),
+            'has_next': page_obj.has_next(),
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number
+        }
+        return JsonResponse(response_data, safe=False)
+
+        # return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         serializer = PostSerializer(data=request.data)
@@ -59,6 +76,30 @@ class PostList(generics.ListCreateAPIView):
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        comment_set = instance.comments.all()
+        page_number = request.GET.get('comment_page')
+        paginator = Paginator(comment_set, 10)
+        page_obj = paginator.get_page(page_number)
+
+        comment_serializer = CommentSerializer(page_obj, many=True)
+
+        response_data = {
+            'post': serializer.data,
+            'comments_paginator': {
+                'comments': comment_serializer.data,
+                'has_previous': page_obj.has_previous(),
+                'has_next': page_obj.has_next(),
+                'total_pages': paginator.num_pages,
+                'current_page': page_obj.number
+            },
+
+        }
+        return JsonResponse(response_data, safe=False)
 
 
 class PostReportView(APIView):
@@ -86,11 +127,19 @@ def PostListProfile(request, id):
     if user != request.user:
         posts = posts.exclude(is_private=True)
 
-    posts_serializer = PostSerializer(posts, many=True)
+    page_number = request.GET.get('page')
+    paginator = Paginator(posts, 10)
+    page_obj = paginator.get_page(page_number)
+
+    posts_serializer = PostSerializer(page_obj, many=True)
     user_serializer = UserSerializer(user)
 
     return JsonResponse({
         'posts': posts_serializer.data,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number,
         'user': user_serializer.data
     }, safe=False)
 

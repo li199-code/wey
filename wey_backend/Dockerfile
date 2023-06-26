@@ -10,6 +10,10 @@ COPY pip.conf /root/.pip/pip.conf
 RUN pip install uwsgi
 RUN pip install -r requirements.txt
 
+RUN python3 manage.py makemigrations
+
+ENV DJANGO_ENV='production'
+
 EXPOSE 8000
 
 CMD ["uwsgi", "--ini", "uwsgi.ini"]

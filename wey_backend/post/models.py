@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from django.utils.timesince import timesince
+from django.utils import timezone
 from django.conf import settings
 
 from account.models import User
@@ -55,7 +56,8 @@ class Post(models.Model):
     comments = models.ManyToManyField(Comment, blank=True)
     comments_count = models.IntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
 
     class Meta:
