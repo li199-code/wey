@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings')
+if os.environ.get('DJANGO_ENV') == 'production':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_prod')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_dev')
 
 application = get_wsgi_application()

@@ -11,7 +11,7 @@ WEBSITE_URL = 'http://1.116.161.57:8000' # 后端服务url,用于静态资源请
 
 ## 前端网址，用于跨域白名单
 CORS_ALLOWED_ORIGINS = [
-    "http://1.116.161.57:8080",
+    "http://1.116.161.57:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = ["http://1.116.161.57:8000"]
@@ -24,7 +24,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'wey',
-        'HOST': '127.0.0.1',
+        'HOST': 'database',
         'PORT': '3306',
         'USER': 'root',
         'PASSWORD': 'root',

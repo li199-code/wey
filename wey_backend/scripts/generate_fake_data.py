@@ -17,7 +17,10 @@ sys.path.append(BASE_DIR)
 
 if __name__ == "__main__":
     # 启动 django
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wey_backend.settings")
+    if os.environ.get('DJANGO_ENV') == 'production':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_prod')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wey_backend.settings_dev')
     django.setup()
 
     from post.models import Post, Comment

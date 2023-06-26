@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS my_database;
+CREATE DATABASE IF NOT EXISTS wey;
 
-USE my_database;
+USE wey;
 
